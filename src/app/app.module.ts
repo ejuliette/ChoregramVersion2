@@ -14,6 +14,7 @@ import { AuthService } from './services/auth.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {HttpClientModule} from '@angular/common/http';
 import { RouterModule, Routes } from '@angular/router';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 const appRoutes: Routes = [
   {path: 'auth/signup', component: SignupComponent},
@@ -35,6 +36,7 @@ const appRoutes: Routes = [
     HeaderComponent
   ],
   imports: [
+    DragDropModule,
     BrowserModule,
     AppRoutingModule,
     FormsModule,

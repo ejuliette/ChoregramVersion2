@@ -1,15 +1,55 @@
 <div class="row">
     <div class="col-sm-8 col-sm-offset-2">
         <h2>Enregistrer une nouvelle chorégraphie</h2>
+        <br>
+
+ <button (click)="add()"> Ajouter Danseur </button>
+ <button (click)="savePlacement()"> Ajouter ce placement </button>
+
+<button (click)="stop()"> Stop </button>
+
+<button (click)="suivant()"> Suivant </button>
+
+<button (click)="precedent()"> Précédent </button>
+
+<button (click)="suivant_autom()"> Suivant Autom </button>
+
+<button (click)="modifierPlacement()"> Modifier ce placement </button>
+
+<h4>Nombre de placements enregistrés : {{ longueur }}</h4>
+<h4>Numéro du placement visualié : {{ indicePla }}</h4>
+
+<div style="position: relative; left: 0px; top: 5px; height: 400px; width: 800px; background-color: lightgray" class="container">
+ <div class = "wrapper" *ngFor="let danseur of danseurs; let index = index" >
+ 
+   <div
+     class = "theDiv"
+     style="height: 20px; width: 20px; background-color: white"
+     cdkDrag [cdkDragFreeDragPosition]="dragPositions[index]"
+     cdkDragBoundary=".container"
+     (cdkDragEnded)="onDragEnded($event, index)">
+     {{danseur.id}}
+   </div>
+ </div>
+ </div>
+</div>
+<div class="col-sm-8 col-sm-offset-2">
+<br>
+</div>
+ <div class="col-sm-8 col-sm-offset-2">
+       
+        <br>
         <form [formGroup]="choregraphieForm" (ngSubmit)="onSaveChoregraphie()">
             <div class="form-group">
                 <label for="nom">Nom de la chorégraphie</label>
                 <input type="text" class="form-control" id="nom" formControlName="nom">
             </div>
+            <br>
             <div class="form-group">
-                <label for="choregraphe">Chorégraphe</label>
+                <label for="choregraphe">Chorégraphe(s)</label>
                 <input type="text" class="form-control" id="choregraphe" formControlName="choregraphe">
             </div>
+            <br>
             <button class="btn btn-success" [disabled]="choregraphieForm.invalid" type="submit">Enregistrer</button>
         </form>
     </div>
