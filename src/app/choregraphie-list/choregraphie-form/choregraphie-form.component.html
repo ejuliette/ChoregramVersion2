@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="col-sm-8 col-sm-offset-2">
+        <h2>Enregistrer une nouvelle chorégraphie</h2>
+        <form [formGroup]="choregraphieForm" (ngSubmit)="onSaveChoregraphie()">
+            <div class="form-group">
+                <label for="nom">Nom de la chorégraphie</label>
+                <input type="text" class="form-control" id="nom" formControlName="nom">
+            </div>
+            <div class="form-group">
+                <label for="choregraphe">Chorégraphe</label>
+                <input type="text" class="form-control" id="choregraphe" formControlName="choregraphe">
+            </div>
+            <button class="btn btn-success" [disabled]="choregraphieForm.invalid" type="submit">Enregistrer</button>
+        </form>
+    </div>
+</div>
