@@ -188,6 +188,7 @@ changementPosition(initial : Placement, final : Placement){
   }
  
   this.affichePlacement(placementIni);
+  console.log("PLA INI",placementIni);
  
   let placementFin = new Placement;
   placementFin.listeDanseurs = [new Danseur(0,0)]; //Créer un placement vide en 0 sinon bug -> travailler à  partir du placement 1
@@ -199,7 +200,7 @@ changementPosition(initial : Placement, final : Placement){
    danseurEtudie.y = final.listeDanseurs[i].y ;
    placementFin.listeDanseurs[i] = danseurEtudie;
   }
- 
+  console.log("PLA FIN",placementFin);
  
  
  this.calculPasIniFin(placementIni, placementFin);
@@ -309,7 +310,6 @@ suivant()
   }
  
   this.indicePlacement = this.indicePlacement;
-  console.log("choresuiv",this.choregraphieVisionnee.listePlacements);
  }
  
  
@@ -343,7 +343,6 @@ precedent()
  }
  
  this.indicePlacement = this.indicePlacement;
- console.log("choreprec",this.choregraphieVisionnee.listePlacements);
  
 }
  
@@ -352,18 +351,13 @@ precedent()
  
  
 modifierPlacement(){
-  console.log("AVANT MODIF");
- console.log(this.choregraphieVisionnee.listePlacements[this.indicePlacement]);
- 
- 
+
  for (let i = 0; i<this.danseurs.length; i++)
  {
-  this.choregraphieVisionnee.listePlacements[this.indicePlacement].listeDanseurs[i].x = this.danseurs[i].x ;
-  this.choregraphieVisionnee.listePlacements[this.indicePlacement].listeDanseurs[i].y = this.danseurs[i].y ;
+  this.choregraphieVisionnee.listePlacements[this.indicePlacement].listeDanseurs[i].x = this.danseurs[i].x1 ;
+  this.choregraphieVisionnee.listePlacements[this.indicePlacement].listeDanseurs[i].y = this.danseurs[i].y1 ;
  }
-  console.log("APRES MODIF");
- console.log(this.choregraphieVisionnee.listePlacements[this.indicePlacement]);
- 
+
 }
  
 }

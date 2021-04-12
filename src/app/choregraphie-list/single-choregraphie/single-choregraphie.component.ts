@@ -14,6 +14,7 @@ import { Choregraphie } from 'src/app/models/choregraphie.model';
 export class SingleChoregraphieComponent implements OnInit {
 
   choregraphie : Choregraphie;
+  choregraphieASuppr : Choregraphie;
 
   constructor(private route: ActivatedRoute,
               private choregraphiesService: ChoregraphiesService,
@@ -31,8 +32,7 @@ loop =  null;
 arret = false;
 tousEnPlace = false;
  
-indicePlacement = 1;
-indicePla = -10000;
+indicePlacement = 0;
 longueur = 0;
  
     componentRef: any;
@@ -42,12 +42,13 @@ longueur = 0;
 
 ngOnInit(): void {
   
+  this.indicePlacement = 1;
   this.choregraphie = new Choregraphie('','');
   const id = this.route.snapshot.params['id'];
   this.choregraphiesService.getSingleChoregraphie(+id).then(
     (choregraphie : Choregraphie) => {
+      this.choregraphieASuppr = choregraphie;
       this.choregraphie = choregraphie;
-      console.log(this.choregraphie);
       this.affichePlacement(this.choregraphie.listePlacements[this.indicePlacement]);
     }
   );
@@ -61,30 +62,77 @@ onBack(){
 
 }
 
+onSaveModifications(choregraphieModif : Choregraphie){
+  const newChoregraphie = this.choregraphie;
+  //this.choregraphiesService.removeChoregraphie(this.choregraphieASuppr);
+  this.choregraphiesService.createNewChoregraphie(newChoregraphie);
+  this.router.navigate(['/choregraphies']);
+  
+ 
+  
+
+}
+
 
 
 onDragEnded(event, index) {
   let danseurCourant = this.danseurs[index];
-  danseurCourant.x = event.source.getFreeDragPosition().x;
-  danseurCourant.y = event.source.getFreeDragPosition().y;
+  danseurCourant.x1 = event.source.getFreeDragPosition().x;
+  danseurCourant.y1 = event.source.getFreeDragPosition().y;
 }
  
 savePlacement(){
+
+  let saveChore = this.choregraphie;
+  
   let placement = new Placement;
   placement.listeDanseurs = [new Danseur(0,0)]; //Créer un placement vide en 0 sinon bug -> travailler à  partir du placement 1
+  
+  this.indicePlacement = this.indicePlacement + 1 ;
+  
   for (let i = 0; i<this.danseurs.length; i++)
   {
    let danseurEtudie = new Danseur(0,0);
    danseurEtudie.id = i+1 ;
-   danseurEtudie.x = this.danseurs[i].x ;
-   danseurEtudie.y = this.danseurs[i].y ;
+   danseurEtudie.x = this.danseurs[i].x1 ;
+   danseurEtudie.y = this.danseurs[i].y1 ;
    placement.listeDanseurs[i] = danseurEtudie;
   }
  
-  this.choregraphie.listePlacements.push(placement);
+  
+  console.log("LISTE PLACEMENT");
   console.log(this.choregraphie.listePlacements);
- 
+
+  let nbPlacements = this.choregraphie.listePlacements.length-1;
+  if(this.indicePlacement-1 < nbPlacements)
+  {
+   let placementPrec = this.choregraphie.listePlacements[this.indicePlacement-1];
+   console.log("plaprec",placementPrec);
+   let nombrePlacementsADecaler = nbPlacements - (this.indicePlacement - 1);
+   console.log("nb placement à decal",nombrePlacementsADecaler);
+   
+   for(let i = 0; i<nombrePlacementsADecaler;i++)
+   {
+    let aDecalerPlusUn = this.choregraphie.listePlacements[nbPlacements - i]; 
+    console.log("indice placement à decal de + 1",nbPlacements - i);
+    this.choregraphie.listePlacements[nbPlacements - i + 1] = aDecalerPlusUn;
+   }
+   console.log("indice du nv placement ",this.indicePlacement);
+    this.choregraphie.listePlacements[this.indicePlacement] = placement;
+    this.choregraphie.listePlacements[this.indicePlacement-1] = placementPrec;
+
+  }
+  else
+  {
+    this.choregraphie.listePlacements.push(placement);
+  }
+  //this.choregraphieVisionnee.listePlacements.push(placement);
   this.longueur =  this.choregraphie.listePlacements.length - 1;
+  console.log("choreAvant",saveChore.listePlacements);
+  console.log("choreApres",this.choregraphie.listePlacements);
+
+
+
  }
  
  
@@ -261,7 +309,6 @@ suivant()
    this.affichePlacement(this.choregraphie.listePlacements[this.indicePlacement]);
   }
  
-  this.indicePla = this.indicePlacement;
  }
  
  
@@ -277,8 +324,7 @@ suivant_autom()
   {
    this.affichePlacement(this.choregraphie.listePlacements[this.indicePlacement]);
   }
- 
-  this.indicePla = this.indicePlacement;
+
  }
  
 precedent()
@@ -294,28 +340,22 @@ precedent()
   this.affichePlacement(this.choregraphie.listePlacements[1]);
  }
  
- this.indicePla = this.indicePlacement;
+ 
  
 }
- 
  
  
  
  
 modifierPlacement(){
-  console.log("AVANT MODIF");
- console.log(this.choregraphie.listePlacements[this.indicePlacement]);
+
+  for (let i = 0; i<this.danseurs.length; i++)
+  {
+   this.choregraphie.listePlacements[this.indicePlacement].listeDanseurs[i].x = this.danseurs[i].x1 ;
+   this.choregraphie.listePlacements[this.indicePlacement].listeDanseurs[i].y = this.danseurs[i].y1 ;
+  }
  
- 
- for (let i = 0; i<this.danseurs.length; i++)
- {
-  this.choregraphie.listePlacements[this.indicePlacement].listeDanseurs[i].x = this.danseurs[i].x ;
-  this.choregraphie.listePlacements[this.indicePlacement].listeDanseurs[i].y = this.danseurs[i].y ;
  }
-  console.log("APRES MODIF");
- console.log(this.choregraphie.listePlacements[this.indicePlacement]);
- 
-}
  
 }
  

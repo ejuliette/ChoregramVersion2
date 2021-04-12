@@ -29,9 +29,10 @@
 <button (click)="modifierPlacement()"> Modifier ce placement </button>
 
 <h4>Nombre de placements enregistrés : {{ choregraphie.listePlacements.length-1 }}</h4>
-<h4>Numéro du placement visualisé : {{ indicePla }}</h4>
+<h4>Numéro du placement visualisé : {{ indicePlacement }}</h4>
 
 <br>
+<button class="btn btn-primary" (click)="onSaveModifications(choregraphie)">Enregistrer les modifications</button>
 
 <div style="position: relative; left: 0px; top: 5px; height: 400px; width: 800px; background-color: lightgray" class="container">
  <div class = "wrapper" *ngFor="let danseur of danseurs; let index = index" >
