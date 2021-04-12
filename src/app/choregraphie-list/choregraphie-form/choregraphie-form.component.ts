@@ -35,8 +35,7 @@ loop =  null;
 arret = false;
 tousEnPlace = false;
  
-indicePlacement = 1;
-indicePla = -10000;
+indicePlacement = 0;
 longueur = 0;
  
     componentRef: any;
@@ -62,7 +61,6 @@ initForm(){
   });
 }
 
-
 ngOnInit(): void {
   this.initForm();
   this.choregraphieVisionnee.listePlacements = [new Placement()];
@@ -76,27 +74,65 @@ add() {
 
 onDragEnded(event, index) {
   let danseurCourant = this.danseurs[index];
-  danseurCourant.x = event.source.getFreeDragPosition().x;
-  danseurCourant.y = event.source.getFreeDragPosition().y;
+  danseurCourant.x1 = event.source.getFreeDragPosition().x;
+  danseurCourant.y1 = event.source.getFreeDragPosition().y;
 }
  
 savePlacement(){
+
+  let saveChore = this.choregraphieVisionnee;
+  
   let placement = new Placement;
   placement.listeDanseurs = [new Danseur(0,0)]; //Créer un placement vide en 0 sinon bug -> travailler à  partir du placement 1
+  
+  this.indicePlacement = this.indicePlacement + 1 ;
+  
   for (let i = 0; i<this.danseurs.length; i++)
   {
    let danseurEtudie = new Danseur(0,0);
    danseurEtudie.id = i+1 ;
-   danseurEtudie.x = this.danseurs[i].x ;
-   danseurEtudie.y = this.danseurs[i].y ;
+   danseurEtudie.x = this.danseurs[i].x1 ;
+   danseurEtudie.y = this.danseurs[i].y1 ;
    placement.listeDanseurs[i] = danseurEtudie;
   }
  
-  this.choregraphieVisionnee.listePlacements.push(placement);
+  
+  console.log("LISTE PLACEMENT");
   console.log(this.choregraphieVisionnee.listePlacements);
- 
+
+  let nbPlacements = this.choregraphieVisionnee.listePlacements.length-1;
+  if(this.indicePlacement-1 < nbPlacements)
+  {
+   let placementPrec = this.choregraphieVisionnee.listePlacements[this.indicePlacement-1];
+   console.log("plaprec",placementPrec);
+   let nombrePlacementsADecaler = nbPlacements - (this.indicePlacement - 1);
+   console.log("nb placement à decal",nombrePlacementsADecaler);
+   
+   for(let i = 0; i<nombrePlacementsADecaler;i++)
+   {
+    let aDecalerPlusUn = this.choregraphieVisionnee.listePlacements[nbPlacements - i]; 
+    console.log("indice placement à decal de + 1",nbPlacements - i);
+    this.choregraphieVisionnee.listePlacements[nbPlacements - i + 1] = aDecalerPlusUn;
+   }
+   console.log("indice du nv placement ",this.indicePlacement);
+    this.choregraphieVisionnee.listePlacements[this.indicePlacement] = placement;
+    this.choregraphieVisionnee.listePlacements[this.indicePlacement-1] = placementPrec;
+
+  }
+  else
+  {
+    this.choregraphieVisionnee.listePlacements.push(placement);
+  }
+  //this.choregraphieVisionnee.listePlacements.push(placement);
   this.longueur =  this.choregraphieVisionnee.listePlacements.length - 1;
+  console.log("choreAvant",saveChore.listePlacements);
+  console.log("choreApres",this.choregraphieVisionnee.listePlacements);
+
+
+
  }
+
+
  
  
 detectePositionSuivante2(initial : Placement, final : Placement){
@@ -272,7 +308,8 @@ suivant()
    this.affichePlacement(this.choregraphieVisionnee.listePlacements[this.indicePlacement]);
   }
  
-  this.indicePla = this.indicePlacement;
+  this.indicePlacement = this.indicePlacement;
+  console.log("choresuiv",this.choregraphieVisionnee.listePlacements);
  }
  
  
@@ -289,7 +326,7 @@ suivant_autom()
    this.affichePlacement(this.choregraphieVisionnee.listePlacements[this.indicePlacement]);
   }
  
-  this.indicePla = this.indicePlacement;
+  this.indicePlacement = this.indicePlacement;
  }
  
 precedent()
@@ -305,7 +342,8 @@ precedent()
   this.affichePlacement(this.choregraphieVisionnee.listePlacements[1]);
  }
  
- this.indicePla = this.indicePlacement;
+ this.indicePlacement = this.indicePlacement;
+ console.log("choreprec",this.choregraphieVisionnee.listePlacements);
  
 }
  
