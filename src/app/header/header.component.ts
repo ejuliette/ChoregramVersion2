@@ -11,6 +11,9 @@ export class HeaderComponent implements OnInit {
   
   isAuth: boolean;
   
+  cheminImage:any = "../logo.ico";
+
+
   constructor(private authService: AuthService) { }
 
   ngOnInit(): void {

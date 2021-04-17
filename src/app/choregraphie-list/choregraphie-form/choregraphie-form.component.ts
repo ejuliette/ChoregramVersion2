@@ -1,5 +1,4 @@
 import { Component, OnInit, VERSION,ViewChild,ViewContainerRef,ComponentFactoryResolver, ElementRef } from '@angular/core';
-
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ɵangular_packages_platform_browser_platform_browser_j } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -9,23 +8,23 @@ import { Danseur } from 'src/app/models/danseur.model';
 import { Placement } from 'src/app/models/placement.model';
 import { Position } from 'src/app/models/position.model';
 
- 
 @Component({
   selector: 'app-choregraphie-form',
-templateUrl: './choregraphie-form.component.html',
+    templateUrl: './choregraphie-form.component.html',
 styleUrls: ['./choregraphie-form.component.css']
 })
+
 export class ChoregraphieFormComponent implements OnInit {
 
-  choregraphieForm: FormGroup;
+choregraphieForm: FormGroup;
 
-  constructor(private formBuilder: FormBuilder,
-              private choregraphiesService : ChoregraphiesService,
-              private router: Router) { }
+constructor(private formBuilder: FormBuilder,
+            private choregraphiesService : ChoregraphiesService,
+            private router: Router) { }
 
-
+// Initialisation : variables vides 
 danseurs: Danseur[] = [];
-choregraphieVisionnee = new Choregraphie("test","test");
+choregraphieVisionnee = new Choregraphie("","");
 dragPositions : Position[] = [];
  
 danseurPasX = [];
@@ -38,21 +37,8 @@ tousEnPlace = false;
 indicePlacement = 0;
 longueur = 0;
  
-    componentRef: any;
+componentRef: any;
 @ViewChild('ele', { read: ViewContainerRef }) entry: ViewContainerRef;
-
-
-
-onSaveChoregraphie(){
-  const nom = this.choregraphieForm.get('nom').value;
-  const choregraphe = this.choregraphieForm.get('choregraphe').value;
-  //const newChoregraphie = new Choregraphie(nom, choregraphe);
-  const newChoregraphie = this.choregraphieVisionnee;
-  newChoregraphie.nom = nom;
-  newChoregraphie.choregraphe = choregraphe;
-  this.choregraphiesService.createNewChoregraphie(newChoregraphie);
-  this.router.navigate(['/choregraphies']);
-}
 
 initForm(){
   this.choregraphieForm = this.formBuilder.group({
@@ -65,28 +51,31 @@ ngOnInit(): void {
   this.initForm();
   this.choregraphieVisionnee.listePlacements = [new Placement()];
 }
- 
+
+//Ajouter un nouveau danseur sur scène
 add() {
   let danseur = new Danseur(0,0);
   danseur.id = this.danseurs.length+1;
   this.danseurs.push(danseur);
 }
 
+//Récupération des coordonnées du danseur déplacé par l'utlisateur
+//lors d'un drag and drop
 onDragEnded(event, index) {
   let danseurCourant = this.danseurs[index];
   danseurCourant.x1 = event.source.getFreeDragPosition().x;
   danseurCourant.y1 = event.source.getFreeDragPosition().y;
 }
- 
-savePlacement(){
 
+//Ajout d'un nouveau placement (entre deux existants ou en fin de chorégraphie)
+savePlacement(){
   let saveChore = this.choregraphieVisionnee;
-  
   let placement = new Placement;
-  placement.listeDanseurs = [new Danseur(0,0)]; //Créer un placement vide en 0 sinon bug -> travailler à  partir du placement 1
+  placement.listeDanseurs = [new Danseur(0,0)]; //Création d'un placement vide en 0 puis travail à partir du placement 1 (cohérence identifiant - indexe)
   
   this.indicePlacement = this.indicePlacement + 1 ;
   
+  //Pour chaque danseur, on enregistre la position
   for (let i = 0; i<this.danseurs.length; i++)
   {
    let danseurEtudie = new Danseur(0,0);
@@ -96,47 +85,121 @@ savePlacement(){
    placement.listeDanseurs[i] = danseurEtudie;
   }
  
-  
-  console.log("LISTE PLACEMENT");
-  console.log(this.choregraphieVisionnee.listePlacements);
-
   let nbPlacements = this.choregraphieVisionnee.listePlacements.length-1;
-  if(this.indicePlacement-1 < nbPlacements)
+  if(this.indicePlacement-1 < nbPlacements) //Si on insère un nouveau placement entre 2 existants 
   {
-   let placementPrec = this.choregraphieVisionnee.listePlacements[this.indicePlacement-1];
-   console.log("plaprec",placementPrec);
+   let placementPrec = this.choregraphieVisionnee.listePlacements[this.indicePlacement-1]; //Sauvegarde du placement dont on prend la place
    let nombrePlacementsADecaler = nbPlacements - (this.indicePlacement - 1);
-   console.log("nb placement à decal",nombrePlacementsADecaler);
    
-   for(let i = 0; i<nombrePlacementsADecaler;i++)
+   for(let i = 0; i<nombrePlacementsADecaler;i++) //Décalage des placements de la liste pour permettre l'insersion du nouveau
    {
     let aDecalerPlusUn = this.choregraphieVisionnee.listePlacements[nbPlacements - i]; 
-    console.log("indice placement à decal de + 1",nbPlacements - i);
     this.choregraphieVisionnee.listePlacements[nbPlacements - i + 1] = aDecalerPlusUn;
    }
-   console.log("indice du nv placement ",this.indicePlacement);
     this.choregraphieVisionnee.listePlacements[this.indicePlacement] = placement;
     this.choregraphieVisionnee.listePlacements[this.indicePlacement-1] = placementPrec;
-
   }
-  else
-  {
+  else //Si on insère un nouveau placement à la fin de tous les existants, on l'ajoute simplement à la suite
     this.choregraphieVisionnee.listePlacements.push(placement);
-  }
-  //this.choregraphieVisionnee.listePlacements.push(placement);
-  this.longueur =  this.choregraphieVisionnee.listePlacements.length - 1;
-  console.log("choreAvant",saveChore.listePlacements);
-  console.log("choreApres",this.choregraphieVisionnee.listePlacements);
 
-
-
+  this.longueur =  this.choregraphieVisionnee.listePlacements.length - 1; //Mise à jour de la longueur de la chorégraphie (pour l'affichage)
  }
 
+ changementPosition(initial : Placement, final : Placement){
+   
+   //Sauvegarde du placement initial dans placementIni
+   let placementIni = new Placement;
+   placementIni.listeDanseurs = [new Danseur(0,0)]; //Création d'un placement vide en 0 puis travail à partir du placement 1 (cohérence identifiant - indexe)
+   for (let i = 0; i<this.danseurs.length; i++)
+   {
+    let danseurEtudie = new Danseur(0,0);
+    danseurEtudie.id = i+1 ;
+    danseurEtudie.x = initial.listeDanseurs[i].x ;
+    danseurEtudie.y = initial.listeDanseurs[i].y ;
+    placementIni.listeDanseurs[i] = danseurEtudie;
+   }
+  
+   //Affichage du placement initial
+   this.affichePlacement(placementIni);
+  
+   //Sauvegarde du placement final dans placementFin
+   let placementFin = new Placement;
+   placementFin.listeDanseurs = [new Danseur(0,0)]; //Créer un placement vide en 0 sinon bug -> travailler à  partir du placement 1
+   for (let i = 0; i<this.danseurs.length; i++)
+   {
+    let danseurEtudie = new Danseur(0,0);
+    danseurEtudie.id = i+1 ;
+    danseurEtudie.x = final.listeDanseurs[i].x ;
+    danseurEtudie.y = final.listeDanseurs[i].y ;
+    placementFin.listeDanseurs[i] = danseurEtudie;
+   }
 
- 
- 
-detectePositionSuivante2(initial : Placement, final : Placement){
- this.verifTousEnPlace2(initial,final)
+   //Déplacement de chaque danseur de sa position initiale vers sa position finale
+  this.calculPasIniFin(placementIni, placementFin);
+  let nbIntervalle = 0;
+  this.loop = setInterval(() => {
+   for (let i = 0; i<placementIni.listeDanseurs.length; i++)
+   {
+     //On vérifie si on a atteint la position finale
+     this.detectePositionSuivante(placementIni, placementFin);
+  
+     //Si ce n'est pas le cas, on déplace les danseurs d'un pas de plus
+     this.dragPositions[i] = {x : this.danseurs[i].x, y: this.danseurs[i].y};
+     this.danseurs[i].x = this.danseurs[i].x + this.danseurPasX[i] ;
+     this.danseurs[i].y = this.danseurs[i].y + this.danseurPasY[i] ;
+  
+     //Lorsque les danseurs sont très proches de leur position finale, ils prennent directement leur position finale 
+     //Cela permet d'éviter les erruers d'arrondie lors des calculs
+     if(Math.abs(placementFin.listeDanseurs[i].x - this.danseurs[i].x)<5 && Math.abs(placementFin.listeDanseurs[i].y - this.danseurs[i].y)<5)
+     {
+       this.dragPositions[i] = {x : this.danseurs[i].x, y: this.danseurs[i].y};
+       this.danseurs[i].y = placementFin.listeDanseurs[i].y;
+       this.danseurs[i].x = placementFin.listeDanseurs[i].x;
+     }
+   }
+   nbIntervalle = nbIntervalle + 1;
+
+   //Sécurité pour éviter que les danseurs dépassent leur position finale
+   if(nbIntervalle>=50)
+    clearInterval(this.loop);
+   }, 25);
+ }
+
+ //Calcul du pas de chaque danseur de sa position initiale vers sa position finale lors d'un déplacement automatique
+ calculPasIniFin(placementIni : Placement, placementFin : Placement){
+  
+  for (let i = 0; i<placementIni.listeDanseurs.length; i++)
+  {
+    let variationX = placementFin.listeDanseurs[i].x - placementIni.listeDanseurs[i].x;
+    let variationY = placementFin.listeDanseurs[i].y - placementIni.listeDanseurs[i].y;
+    let distDirecte = Math.round(Math.sqrt(variationX*variationX+variationY*variationY));
+    let d = distDirecte/50;
+    let pasX=0;
+    let pasY=0;
+    let tan = Math.abs(variationY)/Math.abs(variationX);
+    let angle = Math.atan(tan);
+    pasX = Math.abs(Math.cos(angle))*d;
+    pasY = Math.abs(Math.sin(angle))*d;
+    
+    if(variationX<=0 && variationY<=0)//Position à atteindre en bas à gauche
+      {
+        pasX=-pasX;
+        pasY=-pasY;
+      }
+    else if(variationX>=0 && variationY<=0)//Position à atteindre en bas à droite
+        pasY=-pasY;
+
+    else if(variationX<=0 && variationY>=0)//Position à atteindre en haut à gauche
+        pasX=-pasX;
+
+    this.danseurPasX[i] = pasX;
+    this.danseurPasY[i] = pasY;
+  }
+ }
+
+ //Arrêt du déplacement si le danseur a bien atteint sa position finale
+detectePositionSuivante(initial : Placement, final : Placement){
+ this.verifTousEnPlace(initial,final)
  if(this.tousEnPlace==true) //Tous les danseurs sont bien placés
    {
      clearInterval(this.loop)
@@ -154,201 +217,70 @@ stop()
 {
   this.arret = true;
 }
- 
-verifTousEnPlace2(initial : Placement, final : Placement)
+
+ //Vérifie si tous les danseurs ont atteint leur position finale
+verifTousEnPlace(initial : Placement, final : Placement)
 {
  let ok = true;
  
  for (let i = 0; i<initial.listeDanseurs.length; i++)
  {
   if(final.listeDanseurs[i].x != this.danseurs[i].x || final.listeDanseurs[i].y != this.danseurs[i].y)
-  {
     ok = false;
-  }
  }
  
  if(ok==true)
  this.tousEnPlace = true;
 }
  
- 
-changementPosition(initial : Placement, final : Placement){
- 
- 
- let placementIni = new Placement;
-  placementIni.listeDanseurs = [new Danseur(0,0)]; //Créer un placement vide en 0 sinon bug -> travailler à  partir du placement 1
- 
-  for (let i = 0; i<this.danseurs.length; i++)
-  {
-   let danseurEtudie = new Danseur(0,0);
-   danseurEtudie.id = i+1 ;
-   danseurEtudie.x = initial.listeDanseurs[i].x ;
-   danseurEtudie.y = initial.listeDanseurs[i].y ;
-   placementIni.listeDanseurs[i] = danseurEtudie;
-  }
- 
-  this.affichePlacement(placementIni);
-  console.log("PLA INI",placementIni);
- 
-  let placementFin = new Placement;
-  placementFin.listeDanseurs = [new Danseur(0,0)]; //Créer un placement vide en 0 sinon bug -> travailler à  partir du placement 1
-  for (let i = 0; i<this.danseurs.length; i++)
-  {
-   let danseurEtudie = new Danseur(0,0);
-   danseurEtudie.id = i+1 ;
-   danseurEtudie.x = final.listeDanseurs[i].x ;
-   danseurEtudie.y = final.listeDanseurs[i].y ;
-   placementFin.listeDanseurs[i] = danseurEtudie;
-  }
-  console.log("PLA FIN",placementFin);
- 
- 
- this.calculPasIniFin(placementIni, placementFin);
- let nbIntervalle = 0;
- this.loop = setInterval(() => {
- 
-  for (let i = 0; i<placementIni.listeDanseurs.length; i++)
-  {
-    this.detectePositionSuivante2(placementIni, placementFin);
- 
-    this.dragPositions[i] = {x : this.danseurs[i].x, y: this.danseurs[i].y};
-    this.danseurs[i].x = this.danseurs[i].x + this.danseurPasX[i] ;
-    this.danseurs[i].y = this.danseurs[i].y + this.danseurPasY[i] ;
- 
- 
-    if(Math.abs(placementFin.listeDanseurs[i].x - this.danseurs[i].x)<5 && Math.abs(placementFin.listeDanseurs[i].y - this.danseurs[i].y)<5)
-    {
-     
-      this.dragPositions[i] = {x : this.danseurs[i].x, y: this.danseurs[i].y};
-      this.danseurs[i].y = placementFin.listeDanseurs[i].y;
-      this.danseurs[i].x = placementFin.listeDanseurs[i].x;
- 
-    }
-  
-  }
- 
-  nbIntervalle = nbIntervalle + 1;
- 
- 
-  if(nbIntervalle>=50)
-  {
-   clearInterval(this.loop);
-  }
- 
-  }, 25);
- 
-}
- 
-calculPasIniFin(placementIni : Placement, placementFin : Placement){
- 
- for (let i = 0; i<placementIni.listeDanseurs.length; i++) //Autant de danseur au debut qu'à la fin
- {
- let variationX = placementFin.listeDanseurs[i].x - placementIni.listeDanseurs[i].x;
- let variationY = placementFin.listeDanseurs[i].y - placementIni.listeDanseurs[i].y;
- let distDirecte = Math.round(Math.sqrt(variationX*variationX+variationY*variationY));
- let d = distDirecte/50;
- let pasX=0;
- let pasY=0;
- 
- 
-      let tan = Math.abs(variationY)/Math.abs(variationX);
-     let angle = Math.atan(tan);
-     pasX = Math.abs(Math.cos(angle))*d;
-     pasY = Math.abs(Math.sin(angle))*d;
- 
-     if(variationX<=0 && variationY<=0)//Prochain point en bas à gauche
-       {
-         pasX=-pasX;
-         pasY=-pasY;
-       }
-     else if(variationX>=0 && variationY<=0)//Prochain point en bas à droite
-       {
-         pasY=-pasY;
-       }
-     else if(variationX<=0 && variationY>=0)//Prochain point en haut à gauche
-       {
-         pasX=-pasX;
-       }
- 
- this.danseurPasX[i] = pasX;
- this.danseurPasY[i] = pasY;
- 
- console.log("danseur i =  ",i);
- console.log(this.danseurPasX[i]);
-}
- 
-console.log("tableau pas x ",this.danseurPasX);
- 
-}
- 
 affichePlacement(placement : Placement){
  
  for (let i = 0; i<placement.listeDanseurs.length; i++)
-  {
     this.danseurs[i] = placement.listeDanseurs[i];
-  }
  
   for (let i = 0; i<this.danseurs.length; i++)
-  {
     this.dragPositions[i] = {x : this.danseurs[i].x, y: this.danseurs[i].y};
-  }
- 
 }
- 
- 
+
 suivant()
 {
- 
   if(this.indicePlacement < this.choregraphieVisionnee.listePlacements.length-1)
   {
    this.affichePlacement(this.choregraphieVisionnee.listePlacements[this.indicePlacement+1]);
    this.indicePlacement = this.indicePlacement + 1;
   }
   else
-  {
    this.affichePlacement(this.choregraphieVisionnee.listePlacements[this.indicePlacement]);
-  }
  
   this.indicePlacement = this.indicePlacement;
  }
- 
- 
+
+ //Met les danseurs en mouvement d'une position initiale vers une position finale
 suivant_autom()
 {
- 
   if(this.indicePlacement < this.choregraphieVisionnee.listePlacements.length-1)
   {
    this.changementPosition(this.choregraphieVisionnee.listePlacements[this.indicePlacement], this.choregraphieVisionnee.listePlacements[this.indicePlacement+1]);
    this.indicePlacement = this.indicePlacement + 1;
   }
   else
-  {
-   this.affichePlacement(this.choregraphieVisionnee.listePlacements[this.indicePlacement]);
-  }
+   this.affichePlacement(this.choregraphieVisionnee.listePlacements[this.indicePlacement]);//S'il n'existe pas de position suivante aucun danseur ne bouge
  
   this.indicePlacement = this.indicePlacement;
  }
  
 precedent()
 {
- 
  if(this.indicePlacement > 1)
  {
   this.affichePlacement(this.choregraphieVisionnee.listePlacements[this.indicePlacement-1]);
   this.indicePlacement = this.indicePlacement - 1;
  }
  else
- {
   this.affichePlacement(this.choregraphieVisionnee.listePlacements[1]);
- }
  
  this.indicePlacement = this.indicePlacement;
- 
 }
- 
- 
- 
- 
  
 modifierPlacement(){
 
@@ -359,10 +291,17 @@ modifierPlacement(){
  }
 
 }
- 
+
+onSaveChoregraphie(){
+  //Création d'une nouvelle chorégraphie qui porte le même nom
+  //mais pas de supression de l'ancienne
+  const nom = this.choregraphieForm.get('nom').value;
+  const choregraphe = this.choregraphieForm.get('choregraphe').value;
+  const newChoregraphie = this.choregraphieVisionnee;
+  newChoregraphie.nom = nom;
+  newChoregraphie.choregraphe = choregraphe;
+  this.choregraphiesService.createNewChoregraphie(newChoregraphie);
+  this.router.navigate(['/choregraphies']);
 }
  
- 
-
-
-
+}

@@ -15,6 +15,7 @@ export class ChoregraphieListComponent implements OnInit, OnDestroy{
   choregraphiesSubscription: Subscription;
   constructor(private choregraphiesService: ChoregraphiesService, private router: Router) { }
 
+  //Récupération des chorégraphies à l'iniitalisation de la page
   ngOnInit(): void {
     this.choregraphiesSubscription = this.choregraphiesService.choregraphiesSubject.subscribe(
       (choregraphies: Choregraphie[]) => {
@@ -25,21 +26,22 @@ export class ChoregraphieListComponent implements OnInit, OnDestroy{
     this.choregraphiesService.emitChoregraphies();
   }
 
+  //Redirection vers la page de création de chorégraphie
   onNewChoregraphie(){
     this.router.navigate(['/choregraphies','new']);
   }
 
+  //Suppression de chorégraphie
   onDeleteChoregraphie(choregraphie : Choregraphie){
     this.choregraphiesService.removeChoregraphie(choregraphie);
   }
 
+  //Redirection vers la page de lecture de chorégraphie
   onViewChoregraphie(id:number){
     this.router.navigate(['/choregraphies','view',id]);
   }
 
   ngOnDestroy(){
     this.choregraphiesSubscription.unsubscribe();
-
   }
-
 }
