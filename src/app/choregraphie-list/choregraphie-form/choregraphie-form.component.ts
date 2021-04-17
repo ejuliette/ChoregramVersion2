@@ -57,6 +57,18 @@ add() {
   let danseur = new Danseur(0,0);
   danseur.id = this.danseurs.length+1;
   this.danseurs.push(danseur);
+
+  //Si un nouveau danseur est ajouté en pleine chorégraphie
+  //On le place ne haut à gauche de la scène pour tous les placements précédents
+  for (let i = 1; i<this.choregraphieVisionnee.listePlacements.length; i++) 
+  {
+    this.choregraphieVisionnee.listePlacements[i].listeDanseurs.push(danseur);
+    this.choregraphieVisionnee.listePlacements[i].listeDanseurs[danseur.id].x1 = 0;
+    this.choregraphieVisionnee.listePlacements[i].listeDanseurs[danseur.id].x = 0;
+    this.choregraphieVisionnee.listePlacements[i].listeDanseurs[danseur.id].y1 = 0;
+    this.choregraphieVisionnee.listePlacements[i].listeDanseurs[danseur.id].y = 0;
+  }
+  console.log(this.choregraphieVisionnee.listePlacements);
 }
 
 //Récupération des coordonnées du danseur déplacé par l'utlisateur
